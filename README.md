@@ -241,29 +241,57 @@ chown apache:apache -R /var/www/html
 sudo service httpd restart
 ```
 
-## Validation and Testing
+## Validation & Testing
 
-- Application reachable via Application Load Balancer DNS  
-- ALB health checks stable  
-- EC2 instances terminated and replaced automatically by Auto Scaling  
-- WordPress files persisted using Amazon EFS  
-- Database access limited to application tier  
+This architecture was validated through hands-on testing rather than static configuration.
 
----
+### Application Reachability
+- Accessed the WordPress application through the **Application Load Balancer DNS name**
+- Verified traffic was routed only through the ALB and not directly to EC2 instances
+
+### Load Balancer Health Checks
+- Observed initial target failures caused by WordPress HTTP redirects
+- Adjusted ALB health check success codes to **200–399**
+- Confirmed targets remained healthy and stable after the change
+
+### Auto Scaling Behavior
+- Manually terminated EC2 instances in the Auto Scaling Group
+- Verified new instances launched automatically
+- Confirmed the application remained available during instance replacement
+
+### Persistence Verification
+- Created and modified WordPress content
+- Terminated EC2 instances
+- Confirmed content persisted across new instances using **Amazon EFS**
+
+### Database Access Validation
+- Verified database connectivity only from the application subnets
+- Confirmed no public access to Amazon RDS
 
 ## Key Design Decisions
 
-- Stateless EC2 instances  
-- Shared file storage with Amazon EFS  
-- Database isolated in private subnets  
-- ALB health checks tuned to accept `200–399`  
-- Custom domain optional  
+These decisions were made to align with real-world, production AWS environments.
 
----
+- **Stateless compute**
+  EC2 instances are treated as disposable. All state is externalized.
+
+- **Shared file storage**
+  Amazon EFS is used to allow multiple WordPress instances to serve the same content.
+
+- **Isolated data tier**
+  Amazon RDS is deployed in private subnets with no internet exposure.
+
+- **Health check tuning**
+  ALB health checks were intentionally configured to handle WordPress redirect behavior.
+
+- **Domain configuration**
+  A custom domain was kept optional to focus on infrastructure correctness rather than DNS.
+
 
 ## What This Project Demonstrates
 
-- Production-style AWS architecture  
-- Secure tier isolation  
-- Correct Auto Scaling behavior  
-- Real-world ALB health check troubleshooting  
+- Designing and deploying a **production-style AWS architecture**
+- Implementing **secure tier isolation** using VPC networking
+- Understanding and validating **Auto Scaling replacement behavior**
+- Troubleshooting **real ALB health check failures**
+- Making and explaining **intentional architectural decisions**
