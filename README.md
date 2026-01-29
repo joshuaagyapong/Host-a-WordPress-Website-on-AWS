@@ -4,30 +4,77 @@
 ![Architecture Diagram](Host_a_WordPress_Website_on_AWS.png)
 
 ---
-Deploy a highly available, secure, and scalable WordPress application on AWS using a production-style, multi-tier architecture.
+# Highly Available WordPress Deployment on AWS
+
+## Overview
+
+This project represents a hands-on deployment of a highly available, secure, and scalable WordPress application on AWS using a production-style, multi-tier architecture.
+
+The implementation reflects real-world cloud engineering practices rather than a tutorial or single-instance setup.
+
+---
 
 ## Project Summary
 
-This project demonstrates a real-world WordPress deployment on AWS with a focus on availability, security, scalability, and operational correctness.
+A full WordPress environment was deployed on AWS with a focus on availability, security, scalability, and operational reliability.
 
-The architecture follows enterprise cloud design patterns rather than a single-server setup.
+The architecture was designed to eliminate single points of failure, support horizontal scaling, and follow enterprise cloud design patterns.
 
 ---
 
 ## Architecture Overview
 
-The solution follows a **three-tier architecture**:
+The deployment uses a three-tier architecture.
 
-- **Edge Tier**  
-  Application Load Balancer that receives and routes internet traffic.
+### Edge Tier
 
-- **Application Tier**  
-  WordPress running on EC2 instances managed by an Auto Scaling Group.
+- Application Load Balancer used to receive and route internet traffic
+- Health checks configured to ensure traffic is sent only to healthy targets
 
-- **Data Tier**  
-  Amazon RDS for relational data and Amazon EFS for shared WordPress files.
+### Application Tier
 
-Each tier is deployed in separate subnets with controlled, least-privilege access.
+- WordPress deployed on EC2 instances
+- Instances managed by an Auto Scaling Group
+- Instances distributed across multiple Availability Zones
+- Application layer hosted in private subnets
+
+### Data Tier
+
+- Amazon RDS used for WordPress relational data
+- Amazon EFS used for shared WordPress content
+- Supports stateless application instances
+
+---
+
+## Network and Security Design
+
+- Separate subnets used for each tier
+- Public subnets limited to load balancer access only
+- Private subnets used for application and database layers
+- Security Groups configured using least-privilege rules
+- No direct internet access to EC2 instances or databases
+
+---
+
+## Key Implementation Outcomes
+
+- Multi-AZ high availability
+- Automatic scaling based on demand
+- Secure traffic flow between tiers
+- Centralized and shared file storage
+- Production-aligned AWS service usage
+
+---
+
+## Project Scope
+
+This project demonstrates practical experience with:
+
+- Designing multi-tier AWS architectures
+- Deploying scalable WordPress environments
+- Implementing secure network segmentation
+- Operating production-style cloud workloads
+
 
 ---
 
