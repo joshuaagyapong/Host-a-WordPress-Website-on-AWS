@@ -118,15 +118,27 @@ sudo chmod -R 755 /var/www/html
 
 sudo systemctl restart httpd
 
+
+
+
+
+⬆️ **THIS LINE ABOVE MUST EXIST**  
+That triple backtick **ends Script 1**.
+
+---
+
+### ✅ Script 2 (STARTS SEPARATELY)
+
+```md
 ### Auto Scaling Group User Data Script
 
 This script is attached to the Launch Template and runs automatically whenever a new EC2 instance is launched by the Auto Scaling Group.
 
 **Purpose:**
-- Install and start the web server  
-- Install required PHP dependencies for WordPress  
-- Mount Amazon EFS for shared WordPress files  
-- Ensure consistent configuration across all instances  
+- Install and start the web server
+- Install required PHP dependencies
+- Mount Amazon EFS
+- Ensure consistent configuration across instances
 
 ```bash
 #!/bin/bash
@@ -148,35 +160,4 @@ mount -a
 
 sudo chown -R apache:apache /var/www/html
 sudo systemctl restart httpd
-Validation and Testing
-Application accessed successfully via the Application Load Balancer DNS name
 
-ALB health checks configured and stabilized
-
-EC2 instances terminated manually to confirm Auto Scaling replacement
-
-Shared WordPress files verified across instances using Amazon EFS
-
-Database access restricted to the application tier only
-
-Key Design Decisions
-EC2 instances are stateless and treated as disposable
-
-Shared WordPress files stored in Amazon EFS to support scaling
-
-Database isolated in private subnets with no public access
-
-Load balancer health checks decoupled from WordPress redirects
-
-Custom domain intentionally optional to focus on infrastructure design
-
-What This Project Demonstrates
-Production-style AWS architecture
-
-Secure network and tier isolation
-
-Proper use of load balancing and Auto Scaling
-
-Real-world troubleshooting of health check behavior
-
-Clear and intentional architectural decisions
