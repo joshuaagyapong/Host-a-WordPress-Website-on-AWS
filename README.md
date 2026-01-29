@@ -8,15 +8,15 @@ Deploy a highly available, secure, and scalable WordPress application on AWS usi
 
 ## Project Summary
 
-This project demonstrates how WordPress is deployed in a real-world AWS environment with a focus on **availability, security, scalability, and operational correctness**.
+This project demonstrates a real-world WordPress deployment on AWS with a focus on availability, security, scalability, and operational correctness.
 
-The architecture follows **enterprise cloud design patterns** rather than a single-server setup.
+The architecture follows enterprise cloud design patterns rather than a single-server setup.
 
 ---
 
 ## Architecture Overview
 
-The solution uses a **three-tier architecture**:
+The solution uses a three-tier architecture:
 
 - **Edge / Presentation Layer**  
   Application Load Balancer handling incoming traffic.
@@ -42,7 +42,7 @@ Each tier is isolated using private networking and controlled access.
 - **Launch Template** – Consistent EC2 configuration  
 - **Amazon EC2** – Runs the WordPress application  
 - **Amazon RDS (MySQL)** – Managed relational database  
-- **Amazon EFS** – Shared file storage for WordPress  
+- **Amazon EFS** – Shared file storage across instances  
 - **EC2 Instance Connect Endpoint** – Secure administrative access  
 - **AWS Certificate Manager (ACM)** – SSL/TLS management  
 - **Amazon SNS** – Auto Scaling notifications  
@@ -68,25 +68,23 @@ Each tier is isolated using private networking and controlled access.
 
 Internet
 ↓
-Application Load Balancer (Public Subnets)
+Application Load Balancer
 ↓
-WordPress EC2 Instances (Private App Subnets)
+EC2 Auto Scaling Group
 ↓
-Amazon RDS (Database)
-↓
-Amazon EFS (Shared File Storage)
+Amazon RDS / Amazon EFS
 
 
 ---
 
 ## Security Design
 
-- Application Load Balancer is the **only public entry point**
-- EC2 instances have **no public IP addresses**
-- Database and file storage are isolated in private subnets
-- Security Groups enforce **least-privilege, tier-to-tier access**
-- Administrative access via **EC2 Instance Connect Endpoint**
-- No direct internet access to application or data tiers
+- Application Load Balancer is the only public entry point  
+- EC2 instances have no public IP addresses  
+- Database and file storage are isolated in private subnets  
+- Security Groups enforce least-privilege, tier-to-tier access  
+- Administrative access via EC2 Instance Connect Endpoint  
+- No direct internet access to application or data tiers  
 
 ---
 
@@ -102,10 +100,10 @@ Amazon EFS (Shared File Storage)
 ---
 
 ### Purpose
-- Mount Amazon EFS manually
-- Install WordPress files
-- Validate Apache and PHP configuration
-- Confirm file permissions
+- Mount Amazon EFS manually  
+- Install WordPress files  
+- Validate Apache and PHP configuration  
+- Confirm file permissions  
 
 ---
 
@@ -184,7 +182,7 @@ EC2 instances terminated manually
 
 Auto Scaling replaced instances automatically
 
-Application remained accessible during replacement
+Application remained accessible
 
 Persistence Validation
 WordPress files persisted across instance replacements using Amazon EFS
@@ -192,20 +190,15 @@ WordPress files persisted across instance replacements using Amazon EFS
 Database access restricted to the application tier only
 
 Key Design Decisions
-Stateless compute layer
-EC2 instances are disposable and replaced automatically.
+Stateless EC2 compute layer
 
-Shared file storage
-Amazon EFS enables horizontal scaling of WordPress instances.
+Shared file storage using Amazon EFS
 
-Isolated database tier
-Database deployed in private subnets with no public access.
+Database isolated in private subnets
 
-Health check tuning
-ALB health checks accept HTTP success codes 200–399 to handle WordPress redirects.
+ALB health checks tuned to accept HTTP success codes 200–399
 
-Optional domain configuration
-Custom domain intentionally omitted to focus on infrastructure design.
+Custom domain intentionally optional to focus on infrastructure design
 
 What This Project Demonstrates
 Production-grade AWS architecture
@@ -214,6 +207,6 @@ Secure network and tier isolation
 
 Correct Auto Scaling behavior
 
-Real-world troubleshooting of ALB health checks
+Real-world ALB health check troubleshooting
 
-Clear and intentional architectural decision-making
+Clear, intentional architectural decision-making
