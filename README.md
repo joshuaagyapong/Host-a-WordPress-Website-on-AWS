@@ -142,22 +142,27 @@ sudo chmod -R 755 /var/www/html
 sudo systemctl restart httpd
 
 
+---
+
 ## Script 2 — Auto Scaling Group User Data Script (Production)
-✅ THIS is the only script used by the Auto Scaling Group
 
-This script is attached to the Launch Template and runs automatically
-whenever a new EC2 instance is launched.
+> ✅ **This is the only script used by the Auto Scaling Group**
+>
+> Attached to the Launch Template and executed automatically on instance launch.
 
-Purpose
-Bootstrap EC2 instances automatically
+---
 
-Install Apache and PHP dependencies
+### Purpose
+- Bootstrap EC2 instances automatically  
+- Install Apache and PHP dependencies  
+- Mount Amazon EFS on launch  
+- Ensure stateless, repeatable configuration  
 
-Mount Amazon EFS on launch
+---
 
-Ensure stateless, repeatable configuration
+### User Data Script (Launch Template)
 
-User Data Script (Launch Template)
+```bash
 #!/bin/bash
 
 sudo yum update -y
@@ -176,7 +181,8 @@ echo "$EFS_DNS_NAME:/ /var/www/html nfs4 defaults,_netdev 0 0" >> /etc/fstab
 mount -a
 
 sudo chown -R apache:apache /var/www/html
-sudo systemctl restart httpd
+sudo systemctl restart htt
+
 
 
 ## Validation and Testing
