@@ -60,3 +60,118 @@ Each tier is isolated using private networking and controlled access.
 
 ## Traffic Flow
 
+Internet
+↓
+Application Load Balancer (Public Subnets)
+↓
+WordPress EC2 Instances (Private App Subnets)
+↓
+Amazon RDS (Database)
+↓
+Amazon EFS (Shared File Storage)
+
+
+
+---
+
+## Security Design
+
+- Load Balancer is the only public entry point
+- EC2 instances have no public IP addresses
+- Database and file storage are fully private
+- Security Groups enforce least-privilege, tier-to-tier access
+- Administrative access via EC2 Instance Connect Endpoint
+- No direct internet access to application or data tiers
+
+---
+
+## Deployment Scripts
+
+### WordPress Installation Script (Initial Setup)
+
+```bash
+sudo su
+sudo yum update -y
+sudo mkdir -p /var/www/html
+
+EFS_DNS_NAME=fs-064e9505819af10a4.efs.us-east-1.amazonaws.com
+
+sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport \
+"$EFS_DNS_NAME":/ /var/www/html
+
+sudo yum install -y httpd
+sudo systemctl enable httpd
+sudo systemctl start httpd
+
+sudo dnf install -y \
+php php-cli php-cgi php-curl php-mbstring php-gd php-mysqlnd \
+php-gettext php-json php-xml php-fpm php-intl php-zip php-bcmath \
+php-ctype php-fileinfo php-openssl php-pdo php-tokenizer
+
+wget https://wordpress.org/latest.tar.gz
+tar -xzf latest.tar.gz
+sudo cp -r wordpress/* /var/www/html/
+
+sudo cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+
+sudo chown -R apache:apache /var/www/html
+sudo chmod -R 755 /var/www/html
+
+sudo systemctl restart httpd
+
+### Auto Scaling Group User Data Script
+
+This script is attached to the Launch Template and runs automatically whenever a new EC2 instance is launched by the Auto Scaling Group.
+
+**Purpose:**
+- Install and start the web server
+- Install required PHP dependencies for WordPress
+- Mount Amazon EFS for shared WordPress files
+- Ensure consistent configuration across all instances
+
+```bash
+#!/bin/bash
+
+sudo yum update -y
+sudo yum install -y httpd
+sudo systemctl enable httpd
+sudo systemctl start httpd
+
+sudo dnf install -y \
+php php-cli php-cgi php-curl php-mbstring php-gd php-mysqlnd \
+php-gettext php-json php-xml php-fpm php-intl php-zip php-bcmath \
+php-ctype php-fileinfo php-openssl php-pdo php-tokenizer
+
+EFS_DNS_NAME=fs-02d3268559aa2a318.efs.us-east-1.amazonaws.com
+
+echo "$EFS_DNS_NAME:/ /var/www/html nfs4 defaults,_netdev 0 0" >> /etc_
+
+
+
+## Validation and Testing
+
+- Application accessed successfully via the Application Load Balancer DNS name  
+- ALB health checks configured and stabilized  
+- EC2 instances terminated manually to confirm Auto Scaling replacement  
+- Shared WordPress files verified across instances using Amazon EFS  
+- Database access restricted to the application tier only  
+
+---
+
+## Key Design Decisions
+
+- EC2 instances are stateless and treated as disposable  
+- Shared WordPress files stored in Amazon EFS to support scaling  
+- Database isolated in private subnets with no public access  
+- Load balancer health checks decoupled from WordPress redirects  
+- Custom domain intentionally optional to focus on infrastructure design  
+
+---
+
+## What This Project Demonstrates
+
+- Production-style AWS architecture  
+- Secure network and tier isolation  
+- Proper use of load balancing and Auto Scaling  
+- Real-world troubleshooting of health check behavior  
+- Clear and intentional architectural decisions  
