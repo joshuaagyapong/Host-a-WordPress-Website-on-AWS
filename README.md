@@ -71,7 +71,6 @@ Amazon RDS (Database)
 Amazon EFS (Shared File Storage)
 
 
-
 ---
 
 ## Security Design
