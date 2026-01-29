@@ -122,6 +122,7 @@ sudo chmod -R 755 /var/www/html
 
 sudo systemctl restart httpd
 
+---
 Auto Scaling Group User Data Script
 
 This script is attached to the Launch Template and runs automatically whenever a new EC2 instance is launched by the Auto Scaling Group.
@@ -135,3 +136,4 @@ Install required PHP dependencies
 Mount Amazon EFS for shared WordPress files
 
 Ensure consistent configuration across all instances
+---
