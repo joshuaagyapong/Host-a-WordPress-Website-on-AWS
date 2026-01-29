@@ -114,7 +114,13 @@ sudo chmod -R 755 /var/www/html
 
 sudo systemctl restart httpd
 
-## **Auto Scaling Group Launch Template Script**
+---
+
+
+## Deployment Scripts
+
+### **Auto Scaling Group Launch Template Script**
+ 
 
 -Used to configure all instances launched by the Auto Scaling Group
 
@@ -138,9 +144,9 @@ mount -a
 sudo chown -R apache:apache /var/www/html
 sudo systemctl restart httpd
 
---
+---
 
-Validation and Testing
+### Validation and Testing
 
 Access application via ALB DNS name
 
