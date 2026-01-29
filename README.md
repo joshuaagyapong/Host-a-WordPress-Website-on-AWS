@@ -105,7 +105,7 @@ sudo yum update -y
 sudo mkdir -p /var/www/html
 
 # environment variable
-EFS_DNS_NAME=fs-064e9505819af10a4.efs.us-east-1.amazonaws.com
+EFS_DNS_NAME=fs-0205fad1440578044.efs.us-east-1.amazonaws.com
 
 # mount the efs to the html directory 
 sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport "$EFS_DNS_NAME":/ /var/www/html
@@ -184,7 +184,6 @@ sudo yum update -y
 # install the apache web server, enable it to start on boot, and then start the server immediately
 sudo yum install -y http
 
-d
 sudo systemctl enable httpd 
 sudo systemctl start httpd
 
@@ -224,7 +223,7 @@ sudo systemctl start mysqld
 sudo systemctl enable mysqld
 
 # environment variable
-EFS_DNS_NAME=fs-02d3268559aa2a318.efs.us-east-1.amazonaws.com
+EFS_DNS_NAME=fs-0205fad1440578044.efs.us-east-1.amazonaws.com
 
 # mount the efs to the html directory 
 echo "$EFS_DNS_NAME:/ /var/www/html nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0" >> /etc/fstab
@@ -237,42 +236,29 @@ chown apache:apache -R /var/www/html
 sudo service httpd restart
 ```
 
-Validation and Testing
-Application Validation
-Application accessed via the Application Load Balancer DNS name
+## Validation and Testing
 
-Load balancer health checks configured and stable
+- Application reachable via Application Load Balancer DNS  
+- ALB health checks stable  
+- EC2 instances terminated and replaced automatically by Auto Scaling  
+- WordPress files persisted using Amazon EFS  
+- Database access limited to application tier  
 
-Resilience Validation
-EC2 instances terminated manually
+---
 
-Auto Scaling replaced instances automatically
+## Key Design Decisions
 
-Application remained accessible
+- Stateless EC2 instances  
+- Shared file storage with Amazon EFS  
+- Database isolated in private subnets  
+- ALB health checks tuned to accept `200–399`  
+- Custom domain optional  
 
-Persistence Validation
-WordPress files persisted across instance replacements using Amazon EFS
+---
 
-Database access restricted to the application tier only
+## What This Project Demonstrates
 
-Key Design Decisions
-Stateless EC2 compute layer
-
-Shared file storage using Amazon EFS
-
-Database isolated in private subnets
-
-ALB health checks tuned to accept HTTP success codes 200–399
-
-Custom domain intentionally optional to focus on infrastructure design
-
-What This Project Demonstrates
-Production-grade AWS architecture
-
-Secure network and tier isolation
-
-Correct Auto Scaling behavior
-
-Real-world ALB health check troubleshooting
-
-Clear, intentional architectural decision-making
+- Production-style AWS architecture  
+- Secure tier isolation  
+- Correct Auto Scaling behavior  
+- Real-world ALB health check troubleshooting  
