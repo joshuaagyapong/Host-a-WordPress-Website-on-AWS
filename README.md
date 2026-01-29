@@ -90,87 +90,153 @@ Amazon RDS / Amazon EFS
 
 ## Deployment Scripts
 
----
+### WordPress Installation Script
 
-## Script 1 — Manual WordPress Installation (One-Time Setup)
-
-> ⚠️ **DO NOT use this script in Auto Scaling or Launch Templates**  
-> Used only for manual setup, validation, and troubleshooting.
-
----
-
-### Purpose
-- Mount Amazon EFS manually  
-- Install WordPress files  
-- Validate Apache and PHP configuration  
-- Confirm file permissions  
-
----
-
-### Manual Installation Script
+This script is used for the initial setup of the WordPress application on an EC2 instance. It includes steps for installing Apache, PHP, MySQL, and mounting the Amazon EFS to the instance.
 
 ```bash
+# create to root user
 sudo su
+
+# update the software packages on the ec2 instance 
 sudo yum update -y
+
+# create an html directory 
 sudo mkdir -p /var/www/html
 
+# environment variable
 EFS_DNS_NAME=fs-064e9505819af10a4.efs.us-east-1.amazonaws.com
 
-sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport \
-"$EFS_DNS_NAME":/ /var/www/html
+# mount the efs to the html directory 
+sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport "$EFS_DNS_NAME":/ /var/www/html
 
+# install the apache web server, enable it to start on boot, and then start the server immediately
 sudo yum install -y httpd
-sudo systemctl enable httpd
+sudo systemctl enable httpd 
 sudo systemctl start httpd
 
+# install php 8 along with several necessary extensions for wordpress to run
 sudo dnf install -y \
-php php-cli php-cgi php-curl php-mbstring php-gd php-mysqlnd \
-php-gettext php-json php-xml php-fpm php-intl php-zip php-bcmath \
-php-ctype php-fileinfo php-openssl php-pdo php-tokenizer
+php \
+php-cli \
+php-cgi \
+php-curl \
+php-mbstring \
+php-gd \
+php-mysqlnd \
+php-gettext \
+php-json \
+php-xml \
+php-fpm \
+php-intl \
+php-zip \
+php-bcmath \
+php-ctype \
+php-fileinfo \
+php-openssl \
+php-pdo \
+php-tokenizer
 
+# install the mysql version 8 community repository
+sudo wget https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm 
+#
+# install the mysql server
+sudo dnf install -y mysql80-community-release-el9-1.noarch.rpm 
+sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
+sudo dnf repolist enabled | grep "mysql.*-community.*"
+sudo dnf install -y mysql-community-server 
+#
+# start and enable the mysql server
+sudo systemctl start mysqld
+sudo systemctl enable mysqld
+
+# set permissions
+sudo usermod -a -G apache ec2-user
+sudo chown -R ec2-user:apache /var/www
+sudo chmod 2775 /var/www && find /var/www -type d -exec sudo chmod 2775 {} \;
+sudo find /var/www -type f -exec sudo chmod 0664 {} \;
+chown apache:apache -R /var/www/html 
+
+# download wordpress filesx	
 wget https://wordpress.org/latest.tar.gz
 tar -xzf latest.tar.gz
 sudo cp -r wordpress/* /var/www/html/
 
+# create the wp-config.php file
 sudo cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
 
-sudo chown -R apache:apache /var/www/html
-sudo chmod -R 755 /var/www/html
+# edit the wp-config.php file
+sudo vi /var/www/html/wp-config.php
 
-sudo systemctl restart httpd
-Script 2 — Auto Scaling Group User Data Script (Production)
-✅ This is the ONLY script used by Auto Scaling
-Attached to the Launch Template and executed automatically on instance launch.
+# restart the webserver
+sudo service httpd restart
+```
 
-Purpose
-Bootstrap EC2 instances automatically
+### Auto Scaling Group Launch Template Script
 
-Install Apache and PHP dependencies
+This script is included in the launch template for the Auto Scaling Group, ensuring that new instances are configured correctly with the necessary software and settings.
 
-Mount Amazon EFS on launch
-
-Ensure stateless, repeatable configuration
-
-User Data Script (Launch Template)
+```bash
 #!/bin/bash
-
+# update the software packages on the ec2 instance 
 sudo yum update -y
-sudo yum install -y httpd
-sudo systemctl enable httpd
+
+# install the apache web server, enable it to start on boot, and then start the server immediately
+sudo yum install -y http
+
+d
+sudo systemctl enable httpd 
 sudo systemctl start httpd
 
+# install php 8 along with several necessary extensions for wordpress to run
 sudo dnf install -y \
-php php-cli php-cgi php-curl php-mbstring php-gd php-mysqlnd \
-php-gettext php-json php-xml php-fpm php-intl php-zip php-bcmath \
-php-ctype php-fileinfo php-openssl php-pdo php-tokenizer
+php \
+php-cli \
+php-cgi \
+php-curl \
+php-mbstring \
+php-gd \
+php-mysqlnd \
+php-gettext \
+php-json \
+php-xml \
+php-fpm \
+php-intl \
+php-zip \
+php-bcmath \
+php-ctype \
+php-fileinfo \
+php-openssl \
+php-pdo \
+php-tokenizer
 
+# install the mysql version 8 community repository
+sudo wget https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm 
+#
+# install the mysql server
+sudo dnf install -y mysql80-community-release-el9-1.noarch.rpm 
+sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
+sudo dnf repolist enabled | grep "mysql.*-community.*"
+sudo dnf install -y mysql-community-server 
+#
+# start and enable the mysql server
+sudo systemctl start mysqld
+sudo systemctl enable mysqld
+
+# environment variable
 EFS_DNS_NAME=fs-02d3268559aa2a318.efs.us-east-1.amazonaws.com
 
-echo "$EFS_DNS_NAME:/ /var/www/html nfs4 defaults,_netdev 0 0" >> /etc/fstab
+# mount the efs to the html directory 
+echo "$EFS_DNS_NAME:/ /var/www/html nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0" >> /etc/fstab
 mount -a
 
-sudo chown -R apache:apache /var/www/html
-sudo systemctl restart httpd
+# set permissions
+chown apache:apache -R /var/www/html
+
+# restart the webserver
+sudo service httpd restart
+```
+
 Validation and Testing
 Application Validation
 Application accessed via the Application Load Balancer DNS name
