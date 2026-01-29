@@ -148,7 +148,7 @@ sudo systemctl restart httpd
 
 ---
 
-### Validation and Testing
+- Validation and Testing
 
 Access application via ALB DNS name
 
