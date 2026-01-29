@@ -1,6 +1,6 @@
 # Hosting a WordPress Website on AWS
 
-Deploy a highly available, secure, and scalable WordPress application on AWS using a production-style multi-tier architecture.
+Deploy a highly available, secure, and scalable WordPress application on AWS using a production-style, multi-tier architecture.
 
 ![Architecture Diagram](Host_a_WordPress_Website_on_AWS.png)
 
@@ -8,18 +8,24 @@ Deploy a highly available, secure, and scalable WordPress application on AWS usi
 
 ## Project Summary
 
-This project demonstrates how WordPress is deployed in a real-world AWS environment with a focus on availability, security, and scalability.  
-The architecture follows common enterprise design patterns rather than a single-server setup.
+This project demonstrates how WordPress is deployed in a real-world AWS environment with a focus on **availability, security, scalability, and operational correctness**.
+
+The architecture follows **enterprise cloud design patterns** rather than a single-server setup.
 
 ---
 
 ## Architecture Overview
 
-The solution uses a three-tier architecture:
+The solution uses a **three-tier architecture**:
 
-- **Presentation Tier** – Handles incoming user traffic
-- **Application Tier** – Runs WordPress on scalable compute
-- **Data Tier** – Stores persistent data and shared files
+- **Edge / Presentation Layer**  
+  Application Load Balancer handling incoming traffic.
+
+- **Application Layer**  
+  WordPress running on EC2 instances managed by an Auto Scaling Group.
+
+- **Data & Persistence Layer**  
+  Amazon RDS for relational data and Amazon EFS for shared WordPress files.
 
 Each tier is isolated using private networking and controlled access.
 
@@ -27,39 +33,38 @@ Each tier is isolated using private networking and controlled access.
 
 ## AWS Services Used (and Why)
 
-- **Amazon VPC** – Network isolation and routing control
-- **Public & Private Subnets** – Separate internet-facing and internal resources
-- **Internet Gateway** – Allows inbound traffic to the load balancer
-- **NAT Gateway** – Enables private instances to access the internet securely
-- **Application Load Balancer (ALB)** – Distributes traffic and performs health checks
-- **Auto Scaling Group (ASG)** – Maintains availability and replaces unhealthy instances
-- **Launch Template** – Ensures consistent EC2 configuration
-- **Amazon EC2** – Runs the WordPress application
-- **Amazon RDS (MySQL)** – Managed relational database for WordPress
-- **Amazon EFS** – Shared file storage across multiple EC2 instances
-- **EC2 Instance Connect Endpoint** – Secure administrative access without public SSH
-- **AWS Certificate Manager (ACM)** – SSL/TLS certificate management
-- **Amazon SNS** – Auto Scaling notifications
-- **Amazon Route 53 (Optional)** – DNS and domain management
+- **Amazon VPC** – Network isolation and routing control  
+- **Public & Private Subnets** – Separation of internet-facing and internal resources  
+- **Internet Gateway** – Enables inbound access to the load balancer  
+- **NAT Gateway** – Allows private instances outbound internet access securely  
+- **Application Load Balancer (ALB)** – Traffic distribution and health checks  
+- **Auto Scaling Group (ASG)** – Self-healing and high availability  
+- **Launch Template** – Consistent EC2 configuration  
+- **Amazon EC2** – Runs the WordPress application  
+- **Amazon RDS (MySQL)** – Managed relational database  
+- **Amazon EFS** – Shared file storage for WordPress  
+- **EC2 Instance Connect Endpoint** – Secure administrative access  
+- **AWS Certificate Manager (ACM)** – SSL/TLS management  
+- **Amazon SNS** – Auto Scaling notifications  
+- **Amazon Route 53 (Optional)** – DNS and domain management  
 
 ---
 
 ## Network Design
 
-- **VPC:** Spans two Availability Zones
-- **Public Subnets:**
-  - Application Load Balancer
-  - NAT Gateway
-- **Private Application Subnets:**
-  - WordPress EC2 instances (Auto Scaling Group)
-- **Private Data Subnets:**
-  - Amazon RDS
-  - Amazon EFS mount targets
+- **VPC:** Spans two Availability Zones  
+- **Public Subnets:**  
+  - Application Load Balancer  
+  - NAT Gateways  
+- **Private Application Subnets:**  
+  - WordPress EC2 instances (Auto Scaling Group)  
+- **Private Data Subnets:**  
+  - Amazon RDS  
+  - Amazon EFS mount targets  
 
 ---
 
 ## Traffic Flow
-
 
 Internet
 ↓
@@ -72,32 +77,27 @@ Amazon RDS (Database)
 Amazon EFS (Shared File Storage)
 
 
-
 ---
 
 ## Security Design
 
-- The Application Load Balancer is the **only public entry point**
+- Application Load Balancer is the **only public entry point**
 - EC2 instances have **no public IP addresses**
 - Database and file storage are isolated in private subnets
 - Security Groups enforce **least-privilege, tier-to-tier access**
-- Administrative access is handled through **EC2 Instance Connect Endpoint**
+- Administrative access via **EC2 Instance Connect Endpoint**
 - No direct internet access to application or data tiers
 
 ---
 
 ## Deployment Scripts
 
-### WordPress Installation Script (Initial Setup)
+---
 
 ## Script 1 — Manual WordPress Installation (One-Time Setup)
 
-> ⚠️ **DO NOT use this script in Auto Scaling or Launch Templates**
->
-> This script is used only for:
-> - Initial WordPress setup
-> - Manual validation
-> - Troubleshooting on a single EC2 instance
+> ⚠️ **DO NOT use this script in Auto Scaling or Launch Templates**  
+> Used only for manual setup, validation, and troubleshooting.
 
 ---
 
@@ -140,29 +140,20 @@ sudo chown -R apache:apache /var/www/html
 sudo chmod -R 755 /var/www/html
 
 sudo systemctl restart httpd
+Script 2 — Auto Scaling Group User Data Script (Production)
+✅ This is the ONLY script used by Auto Scaling
+Attached to the Launch Template and executed automatically on instance launch.
 
+Purpose
+Bootstrap EC2 instances automatically
 
----
+Install Apache and PHP dependencies
 
-## Script 2 — Auto Scaling Group User Data Script (Production)
+Mount Amazon EFS on launch
 
-> ✅ **This is the only script used by the Auto Scaling Group**
->
-> Attached to the Launch Template and executed automatically on instance launch.
+Ensure stateless, repeatable configuration
 
----
-
-### Purpose
-- Bootstrap EC2 instances automatically  
-- Install Apache and PHP dependencies  
-- Mount Amazon EFS on launch  
-- Ensure stateless, repeatable configuration  
-
----
-
-### User Data Script (Launch Template)
-
-```bash
+User Data Script (Launch Template)
 #!/bin/bash
 
 sudo yum update -y
@@ -181,52 +172,48 @@ echo "$EFS_DNS_NAME:/ /var/www/html nfs4 defaults,_netdev 0 0" >> /etc/fstab
 mount -a
 
 sudo chown -R apache:apache /var/www/html
-sudo systemctl restart htt
+sudo systemctl restart httpd
+Validation and Testing
+Application Validation
+Application accessed via the Application Load Balancer DNS name
 
+Load balancer health checks configured and stable
 
+Resilience Validation
+EC2 instances terminated manually
 
-## Validation and Testing
+Auto Scaling replaced instances automatically
 
----
+Application remained accessible during replacement
 
-### Application Validation
-- Application accessed successfully via the Application Load Balancer DNS name  
-- Load balancer health checks configured and stable  
+Persistence Validation
+WordPress files persisted across instance replacements using Amazon EFS
 
----
+Database access restricted to the application tier only
 
-### Resilience Validation
-- EC2 instances terminated manually  
-- Auto Scaling replaced instances automatically  
-- Application remained accessible during replacement  
+Key Design Decisions
+Stateless compute layer
+EC2 instances are disposable and replaced automatically.
 
----
+Shared file storage
+Amazon EFS enables horizontal scaling of WordPress instances.
 
-### Persistence Validation
-- WordPress files persisted across instance replacements using Amazon EFS  
-- Database access restricted to the application tier only  
+Isolated database tier
+Database deployed in private subnets with no public access.
 
----
+Health check tuning
+ALB health checks accept HTTP success codes 200–399 to handle WordPress redirects.
 
-## Key Design Decisions
+Optional domain configuration
+Custom domain intentionally omitted to focus on infrastructure design.
 
----
+What This Project Demonstrates
+Production-grade AWS architecture
 
-- **Stateless compute layer**  
-  EC2 instances are disposable and replaced automatically by Auto Scaling.
+Secure network and tier isolation
 
-- **Shared file storage**  
-  WordPress files stored in Amazon EFS to support horizontal scaling.
+Correct Auto Scaling behavior
 
-- **Isolated database tier**  
-  Database deployed in private subnets with no public access.
+Real-world troubleshooting of ALB health checks
 
-- **Health check tuning**  
-  Load balancer health checks adjusted to handle WordPress redirects.
-  Success codes
-The HTTP codes to use when checking for a successful response from a target. You can specify multiple values (for example, "200,202") or a range of values (for example, "200-299").
-200-399
-
-
-- **Optional domain configuration**  
-  Custom domain intentionally optional to focus on infrastructure
+Clear and intentional architectural decision-making
