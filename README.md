@@ -16,18 +16,18 @@ The architecture follows enterprise cloud design patterns rather than a single-s
 
 ## Architecture Overview
 
-The solution uses a three-tier architecture:
+The solution follows a **three-tier architecture**:
 
-- **Edge / Presentation Layer**  
-  Application Load Balancer handling incoming traffic.
+- **Edge Tier**  
+  Application Load Balancer that receives and routes internet traffic.
 
-- **Application Layer**  
+- **Application Tier**  
   WordPress running on EC2 instances managed by an Auto Scaling Group.
 
-- **Data & Persistence Layer**  
+- **Data Tier**  
   Amazon RDS for relational data and Amazon EFS for shared WordPress files.
 
-Each tier is isolated using private networking and controlled access.
+Each tier is deployed in separate subnets with controlled, least-privilege access.
 
 ---
 
@@ -53,26 +53,31 @@ Each tier is isolated using private networking and controlled access.
 ## Network Design
 
 - **VPC:** Spans two Availability Zones  
+
+- **Internet Gateway (IGW):**  
+  - Attached to the VPC  
+  - Provides inbound internet access to public subnets  
+
 - **Public Subnets:**  
   - Application Load Balancer  
   - NAT Gateways  
+
+- **NAT Gateway:**  
+  - Allows private subnets outbound internet access only  
+
 - **Private Application Subnets:**  
   - WordPress EC2 instances (Auto Scaling Group)  
+
 - **Private Data Subnets:**  
   - Amazon RDS  
   - Amazon EFS mount targets  
+
 
 ---
 
 ## Traffic Flow
 
-Internet
-↓
-Application Load Balancer
-↓
-EC2 Auto Scaling Group
-↓
-Amazon RDS / Amazon EFS
+Internet → Application Load Balancer → EC2 Auto Scaling Group → Amazon RDS / Amazon EFS
 
 
 ---
