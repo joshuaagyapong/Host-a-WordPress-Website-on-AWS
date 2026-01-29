@@ -1,6 +1,7 @@
 # Hosting a WordPress Website on AWS
 
-Deploy a highly available WordPress application on AWS using a multi-tier, production-style architecture.
+Deploy a highly available WordPress application on AWS using a multi-tier,architecture
+![Alt text](Host_a_WordPress_Website_on_AWS.png)
 
 ---
 
