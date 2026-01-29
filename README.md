@@ -217,6 +217,10 @@ sudo systemctl restart httpd
 
 - **Health check tuning**  
   Load balancer health checks adjusted to handle WordPress redirects.
+  Success codes
+The HTTP codes to use when checking for a successful response from a target. You can specify multiple values (for example, "200,202") or a range of values (for example, "200-299").
+200-399
+
 
 - **Optional domain configuration**  
   Custom domain intentionally optional to focus on infrastructure
