@@ -90,11 +90,11 @@ Amazon EFS (Shared File Storage)
 
 ### WordPress Installation Script (Initial Setup)
 
-## Script 1 — WordPress Manual Installation (One-Time Setup)
+## Script 1 — Manual WordPress Installation (One-Time Setup)
 
 > ⚠️ **DO NOT use this script in Auto Scaling or Launch Templates**
 >
-> This script is intended for:
+> This script is used only for:
 > - Initial WordPress setup
 > - Manual validation
 > - Troubleshooting on a single EC2 instance
@@ -102,9 +102,10 @@ Amazon EFS (Shared File Storage)
 ---
 
 ### Purpose
-- Install WordPress manually
+- Mount Amazon EFS manually
+- Install WordPress files
 - Validate Apache and PHP configuration
-- Confirm EFS mount and permissions
+- Confirm file permissions
 
 ---
 
@@ -139,18 +140,20 @@ sudo chown -R apache:apache /var/www/html
 sudo chmod -R 755 /var/www/html
 
 sudo systemctl restart httpd
-Script 2 — Auto Scaling Group User Data Script (Production)
-✅ THIS is the only script used by Auto Scaling
+
+
+## Script 2 — Auto Scaling Group User Data Script (Production)
+✅ THIS is the only script used by the Auto Scaling Group
 
 This script is attached to the Launch Template and runs automatically
 whenever a new EC2 instance is launched.
 
 Purpose
-Bootstrap EC2 instances
+Bootstrap EC2 instances automatically
 
-Install Apache and PHP
+Install Apache and PHP dependencies
 
-Mount Amazon EFS
+Mount Amazon EFS on launch
 
 Ensure stateless, repeatable configuration
 
@@ -174,42 +177,46 @@ mount -a
 
 sudo chown -R apache:apache /var/www/html
 sudo systemctl restart httpd
-Validation and Testing
-Application Validation
-Application accessed via Application Load Balancer DNS name
 
-ALB health checks configured and stable
 
-Resilience Validation
-EC2 instances terminated manually
+## Validation and Testing
 
-Auto Scaling replaced instances automatically
+---
 
-Application remained accessible
+### Application Validation
+- Application accessed successfully via the Application Load Balancer DNS name  
+- Load balancer health checks configured and stable  
 
-Persistence Validation
-WordPress files persisted across instance replacements using Amazon EFS
+---
 
-Database access restricted to application tier only
+### Resilience Validation
+- EC2 instances terminated manually  
+- Auto Scaling replaced instances automatically  
+- Application remained accessible during replacement  
 
-Key Design Decisions
-EC2 instances are stateless and disposable
+---
 
-Shared WordPress files stored in Amazon EFS
+### Persistence Validation
+- WordPress files persisted across instance replacements using Amazon EFS  
+- Database access restricted to the application tier only  
 
-Database isolated in private subnets
+---
 
-Load balancer health checks decoupled from WordPress redirects
+## Key Design Decisions
 
-Custom domain intentionally optional to focus on infrastructure design
+---
 
-What This Project Demonstrates
-Production-grade AWS architecture
+- **Stateless compute layer**  
+  EC2 instances are disposable and replaced automatically by Auto Scaling.
 
-Secure network and tier isolation
+- **Shared file storage**  
+  WordPress files stored in Amazon EFS to support horizontal scaling.
 
-Correct Auto Scaling behavior
+- **Isolated database tier**  
+  Database deployed in private subnets with no public access.
 
-Real-world troubleshooting of ALB health checks
+- **Health check tuning**  
+  Load balancer health checks adjusted to handle WordPress redirects.
 
-Clear, intentional infrastructure decisions
+- **Optional domain configuration**  
+  Custom domain intentionally optional to focus on infrastructure
