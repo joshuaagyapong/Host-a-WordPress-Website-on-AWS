@@ -58,7 +58,8 @@ Each tier is isolated using private networking and controlled access.
 
 ---
 
-Traffic Flow
+## Traffic Flow
+
 
 Internet
 ↓
@@ -71,15 +72,16 @@ Amazon RDS (Database)
 Amazon EFS (Shared File Storage)
 
 
+
 ---
 
 ## Security Design
 
-- Load Balancer is the only public entry point
-- EC2 instances have no public IP addresses
-- Database and file storage are fully private
-- Security Groups enforce least-privilege, tier-to-tier access
-- Administrative access via EC2 Instance Connect Endpoint
+- The Application Load Balancer is the **only public entry point**
+- EC2 instances have **no public IP addresses**
+- Database and file storage are isolated in private subnets
+- Security Groups enforce **least-privilege, tier-to-tier access**
+- Administrative access is handled through **EC2 Instance Connect Endpoint**
 - No direct internet access to application or data tiers
 
 ---
@@ -87,6 +89,8 @@ Amazon EFS (Shared File Storage)
 ## Deployment Scripts
 
 ### WordPress Installation Script (Initial Setup)
+
+Used for initial setup and validation during early deployment and testing.
 
 ```bash
 sudo su
@@ -117,47 +121,3 @@ sudo chown -R apache:apache /var/www/html
 sudo chmod -R 755 /var/www/html
 
 sudo systemctl restart httpd
-
-
-
-
-
-⬆️ **THIS LINE ABOVE MUST EXIST**  
-That triple backtick **ends Script 1**.
-
----
-
-### ✅ Script 2 (STARTS SEPARATELY)
-
-```md
-### Auto Scaling Group User Data Script
-
-This script is attached to the Launch Template and runs automatically whenever a new EC2 instance is launched by the Auto Scaling Group.
-
-**Purpose:**
-- Install and start the web server
-- Install required PHP dependencies
-- Mount Amazon EFS
-- Ensure consistent configuration across instances
-
-```bash
-#!/bin/bash
-
-sudo yum update -y
-sudo yum install -y httpd
-sudo systemctl enable httpd
-sudo systemctl start httpd
-
-sudo dnf install -y \
-php php-cli php-cgi php-curl php-mbstring php-gd php-mysqlnd \
-php-gettext php-json php-xml php-fpm php-intl php-zip php-bcmath \
-php-ctype php-fileinfo php-openssl php-pdo php-tokenizer
-
-EFS_DNS_NAME=fs-02d3268559aa2a318.efs.us-east-1.amazonaws.com
-
-echo "$EFS_DNS_NAME:/ /var/www/html nfs4 defaults,_netdev 0 0" >> /etc/fstab
-mount -a
-
-sudo chown -R apache:apache /var/www/html
-sudo systemctl restart httpd
-
