@@ -6,67 +6,51 @@
 ---
 # Highly Available WordPress Deployment on AWS
 
-## Overview
+## Project Overview
 
-This project represents a hands-on deployment of a highly available, secure, and scalable WordPress application on AWS using a production-style, multi-tier architecture.
+Deployed a highly available, secure, and scalable WordPress application on AWS using a production-style, multi-tier architecture.
 
-The implementation reflects real-world cloud engineering practices rather than a tutorial or single-instance setup.
-
----
-
-## Project Summary
-
-A full WordPress environment was deployed on AWS with a focus on availability, security, scalability, and operational reliability.
-
-The architecture was designed to eliminate single points of failure, support horizontal scaling, and follow enterprise cloud design patterns.
+This project reflects real-world cloud engineering practices and avoids single-server or demo configurations.
 
 ---
 
-## Architecture Overview
+## Architecture Summary
 
-The deployment uses a three-tier architecture.
+Three-tier architecture designed for availability and scale.
 
-### Edge Tier
+**Edge Layer**
+- Application Load Balancer handling internet traffic
 
-- Application Load Balancer used to receive and route internet traffic
-- Health checks configured to ensure traffic is sent only to healthy targets
+**Application Layer**
+- WordPress on EC2
+- Auto Scaling Group across multiple Availability Zones
+- Private subnets only
 
-### Application Tier
-
-- WordPress deployed on EC2 instances
-- Instances managed by an Auto Scaling Group
-- Instances distributed across multiple Availability Zones
-- Application layer hosted in private subnets
-
-### Data Tier
-
-- Amazon RDS used for WordPress relational data
-- Amazon EFS used for shared WordPress content
-- Supports stateless application instances
+**Data Layer**
+- Amazon RDS for relational data
+- Amazon EFS for shared WordPress files
 
 ---
 
-## Network and Security Design
+## Security and Reliability
 
-- Separate subnets used for each tier
-- Public subnets limited to load balancer access only
-- Private subnets used for application and database layers
-- Security Groups configured using least-privilege rules
-- No direct internet access to EC2 instances or databases
-
----
-
-## Key Implementation Outcomes
-
-- Multi-AZ high availability
-- Automatic scaling based on demand
-- Secure traffic flow between tiers
-- Centralized and shared file storage
-- Production-aligned AWS service usage
+- Network segmentation across tiers
+- Least-privilege Security Group rules
+- No direct internet access to application or database layers
+- Multi-AZ deployment for fault tolerance
 
 ---
 
-## Project Scope
+## Key Outcomes
+
+- High availability and automatic scaling
+- Stateless application layer
+- Secure, production-aligned architecture
+- Designed to support real workloads
+
+---
+
+## Skills Demonstrated
 
 This project demonstrates practical experience with:
 
