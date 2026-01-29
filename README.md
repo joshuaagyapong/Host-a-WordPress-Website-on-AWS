@@ -114,12 +114,14 @@ sudo chmod -R 755 /var/www/html
 
 sudo systemctl restart httpd
 
----
 
+
+
+---
 
 ## Deployment Scripts
 
-### **Auto Scaling Group Launch Template Script**
+### Auto Scaling User Data Script
  
 
 -Used to configure all instances launched by the Auto Scaling Group
