@@ -8,9 +8,10 @@
 
 ## Project Overview
 
-Deployed a highly available, secure, and scalable WordPress application on AWS using a production-style, multi-tier architecture.
+Designed and deployed a highly available, secure, and scalable WordPress application on AWS using a production-style, multi-tier architecture.
 
-This project reflects real-world cloud engineering practices and avoids single-server or demo configurations.
+This project focuses on real-world cloud engineering patterns, including fault tolerance, stateless compute, managed data services, and automated recovery.
+
 
 ---
 
@@ -193,7 +194,7 @@ sudo chmod 2775 /var/www && find /var/www -type d -exec sudo chmod 2775 {} \;
 sudo find /var/www -type f -exec sudo chmod 0664 {} \;
 chown apache:apache -R /var/www/html 
 
-# download wordpress filesx	
+# download wordpress files
 wget https://wordpress.org/latest.tar.gz
 tar -xzf latest.tar.gz
 sudo cp -r wordpress/* /var/www/html/
