@@ -58,7 +58,7 @@ Each tier is isolated using private networking and controlled access.
 
 ---
 
-## Traffic Flow
+Traffic Flow
 
 Internet
 ↓
